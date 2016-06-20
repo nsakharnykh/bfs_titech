@@ -4,7 +4,10 @@ SW = GNU3
 MPICC = mpicc
 MPICPP = mpicxx
 
-NVFLAG_BASE = -Drestrict=__restrict__ -Xcompiler -fopenmp,-ffast-math,-Wall -arch=compute_35 -code=sm_35
+CUDA_ARCH += -gencode arch=compute_35,code=sm_35
+CUDA_ARCH += -gencode arch=compute_52,code=sm_52
+
+NVFLAG_BASE = -Drestrict=__restrict__ -Xcompiler -fopenmp,-ffast-math,-Wall $(CUDA_ARCH)
 ifeq ($(SW), GNU3)
 CFLAGS = -fopenmp -g -Wall -Drestrict=__restrict__ -O3 -DNDEBUG -ffast-math # -g -pg
 NVCCFLAGS = $(NVFLAG_BASE) -g -O3 -DNDEBUG -keep
@@ -21,12 +24,12 @@ ifeq ($(SW), INTEL3)
 CFLAGS = -ipo -no-prec-div -openmp -g3 -Drestrict=__restrict__ -O3 -DNDEBUG
 #CFLAGS = -ipo -openmp -g3 -Drestrict=__restrict__ -O2 -DNDEBUG
 NVCCFLAGS = $(NVFLAG_BASE) -g -O3 -DNDEBUG -keep
-LDFLAGS = -openmp -g 
+LDFLAGS = -openmp -g
 endif
 ifeq ($(SW), INTEL0)
 CFLAGS = -ipo -no-prec-div -openmp -g3 -Drestrict=__restrict__ -O0
 NVCCFLAGS = $(NVFLAG_BASE) -g -G -O0
-LDFLAGS = -openmp -g 
+LDFLAGS = -openmp -g
 endif
 ifeq ($(SW), FUJI3)
 MPICC = mpifccpx
@@ -44,6 +47,7 @@ endif
 
 CPPFLAGS = $(CFLAGS)
 
+CUDA_PATH ?= $(CUDA_HOME)
 LIBS = -lm -lnuma
 CUDALIB = -L$(CUDA_PATH)/lib64 -lcudart -lcuda
 #NVCC = $(HOME)/apps/cuda4.1/bin/nvcc
@@ -58,7 +62,7 @@ all: gpu
 
 cpu: $(OBJS)
 	$(MPICPP) $(LDFLAGS) -o runnable $(OBJS) $(LIBS)
-	
+
 gpu: $(OBJS) $(CUOBJ)
 	$(MPICPP) $(LDFLAGS) -o runnable $(OBJS) $(CUOBJ) $(LIBS) $(CUDALIB)
 
@@ -66,16 +70,16 @@ gpu: $(OBJS) $(CUOBJ)
 
 .c.o:
 	$(MPICC) $(INC) -c $(CFLAGS) $< -o $*.o
-	
+
 .cpp.o:
 	$(MPICPP) $(INC) -c $(CPPFLAGS) $< -o $*.o
-	
+
 .cc.o:
 	$(MPICPP) $(INC) -c $(CPPFLAGS) $< -o $*.o
-	
+
 .cu.o:
 	$(NVCC) -c $(NVCCFLAGS) $< -o $*.o
-	
+
 .PHONY: clean
 clean:
 	-rm -f $(BINS) $(OBJS) $(CUOBJ)

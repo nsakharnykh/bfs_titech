@@ -613,7 +613,7 @@ public:
 	virtual void generateRange(EdgeType* edge_buffer, int64_t start_edge, int64_t end_edge) const
 	{
 		if(start_edge < this->num_initial_edges()) {
-			generateInitialEdge(edge_buffer, start_edge, std::min(end_edge, this->num_initial_edges()));
+			this->generateInitialEdge(edge_buffer, start_edge, std::min(end_edge, this->num_initial_edges()));
 		}
 
 #pragma omp for
@@ -624,7 +624,7 @@ public:
 			make_one_edge(this->num_global_verts(), 0, &new_state, &edge_buffer[edge_index - start_edge]);
 		}
 
-		generateWeight(edge_buffer, start_edge, end_edge);
+		this->generateWeight(edge_buffer, start_edge, end_edge);
 	}
 private:
 	enum PARAMS {

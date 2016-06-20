@@ -569,7 +569,8 @@ int read_log_file(LogFileFormat* log, int SCALE, int edgefactor, double* bfs_tim
 		if(mpi.isMaster()) {
 			FILE* fp = fopen(logfilename, "rb");
 			if(fp != NULL) {
-				fread(log, sizeof(log[0]), 1, fp);
+				if (fread(log, sizeof(log[0]), 1, fp) == 0)
+					fprintf(stderr, "Error reading log file data\n");
 				if(log->scale != SCALE || log->edge_factor != edgefactor || log->mpi_size != mpi.size_2d) {
 					fprintf(stderr, "Log file is not match the current run: params:(current),(log): SCALE:%d,%d, edgefactor:%d,%d, size:%d,%d\n",
 					SCALE, log->scale, edgefactor, log->edge_factor, mpi.size_2d, log->mpi_size);
